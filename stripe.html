@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title></title>
+  </head>
+  <script src="https://js.stripe.com/v3/"></script>
+  <body>
+    <section class="payment_page">
+      <div class="container">
+        <div class="divider_wrapper">
+          <div class="divider">
+
+          </div>
+        </div>
+        <div class="left_part">
+          <div class="header_left_part">
+            <a href="https://strideself.com/" class="head_logo"> <b>stride</b>self </a>
+            <div class="billed_to">
+              Billed to hello@world.com
+            </div>
+          </div>
+          <div class="content_payment">
+            <div class="profile_payment">
+              <img src="./img/samuel@2x.jpg" alt="">
+              <!--  -->
+              <div class="payment_profile_info">
+                <div class="name">
+                  Samuel Katz
+                </div>
+                <div class="position">
+                  Executive and Performance Coach
+                </div>
+              </div>
+            </div>
+            <div class="payments_general_info">
+              <h3>Two-Hours Breakthrough Session</h3>
+              <div class="editable_html_content">
+                <p>
+                Lorem ipsum dolor sit amet, consectetur adipiscing elit. Maecenas varius tortor nibh, sit amet tempor nibh finibus et. Aenean eu enim justo.
+                </p>
+                <p>
+                Aenean eu enim justo. Maecenas varius tortor nibh, sit amet tempor nibh finibus et. Aenean eu enim justo.
+                </p>
+                <p>
+                  <ul>
+                    <li>Maecenas varius tortor nibh, sit amet tempor et.</li>
+                    <li>Aenean eu enim justo.</li>
+                    <li>Vestibulum aliquam hendrerit molestie.</li>
+                  </ul>
+                </p>
+              </div>
+              <div class="payments_price">
+                <div class="title">
+                  Total to Pay
+                </div>
+                <div class="price">
+                  $350.00
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="footer_left_part">
+            Powered by <b>Stripe</b>
+          </div>
+        </div>
+        <div class="right_part">
+          <div class="form_wrapper">
+            <div class="divider_head">
+              <hr>
+              <!-- <p class="overflow"><span>Or pay with card</span></p> -->
+              <div class="overlow_text">
+                Or pay with card
+              </div>
+            </div>
+            <form id="payment-form" style="">
+              <input type="email" name="" value="" placeholder="Email">
+              <div id="card-element1">
+              </div>
+              <div id="card-element2">
+              </div>
+              <div id="card-element3">
+              </div>
+              <div id="card-errors" role="alert"></div>
+
+              <button id="submit">Pay</button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+
+
+    <script type="text/javascript">
+      var stripe = Stripe('pk_live_rxxT9DBEgqWfRlsbOcSyvEoG');
+      var elements = stripe.elements();
+      var style = {
+        base: {
+          color: "#32325d",
+        }
+      };
+
+      var card = elements.create("cardNumber", { style: style });
+      var cardExpiry = elements.create("cardExpiry", { style: style });
+      var cardCvc = elements.create("cardCvc", { style: style });
+      card.mount("#card-element1");
+      cardExpiry.mount("#card-element2");
+      cardCvc.mount("#card-element3");
+      var form = document.getElementById('payment-form');
+      form.addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        stripe.createToken(card).then(function(result) {
+          if (result.error) {
+            // Inform the customer that there was an error.
+            var errorElement = document.getElementById('card-errors');
+            errorElement.textContent = result.error.message;
+          } else {
+            // Send the token to your server.
+            var hiddenInput = document.createElement('input');
+            hiddenInput.setAttribute('type', 'hidden');
+            hiddenInput.setAttribute('name', 'stripeToken');
+            hiddenInput.setAttribute('value', result.token.id);
+            console.log(result.token.id);
+            form.appendChild(hiddenInput);
+
+
+            var form_data = new FormData();
+            form_data.append("test", 'test');
+            //form_data.append("stripeToken", result.token.id);
+
+            var settings = {
+              "url": 'https://strideself.com/wp-json/stripe/v1/payment?stripeToken=' + result.token.id,
+              "method": "GET",
+              "timeout": 0,
+              "headers": {
+                "Content-Type": "application/x-www-form-urlencoded"
+              },
+              "processData": false,
+              "mimeType": "multipart/form-data",
+              "contentType": false,
+              "data": form_data
+            };
+
+            $.ajax(settings).done(function (response) {
+              console.log(response);
+            });
+
+            // var myHeaders = new Headers();
+            // myHeaders.append("Content-Type", "multipart/form-data;");
+            //
+            // var formdata = new FormData();
+            // formdata.append("test", "test");
+            // //formdata.append("stripeToken", result.token.id);
+            //
+            // var requestOptions = {
+            //   method: 'POST',
+            //   headers: myHeaders,
+            //   body: formdata,
+            //   redirect: 'follow'
+            // };
+            //
+            // fetch("https://strideself.com/wp-json/stripe/v1/payment", requestOptions)
+            //   .then(response => response.text())
+            //   .then(result => console.log(result))
+            //   .catch(error => console.log('error', error));
+
+          }
+        });
+      });
+      function stripeTokenHandler(token) {
+        // Insert the token ID into the form so it gets submitted to the server
+        // var form2 = document.getElementById('payment-form');
+        // var hiddenInput = document.createElement('input');
+        // hiddenInput.setAttribute('type', 'hidden');
+        // hiddenInput.setAttribute('name', 'stripeToken');
+        // hiddenInput.setAttribute('value', token.id);
+        // form2.appendChild(hiddenInput);
+        //
+        // // Submit the form
+        // form2.submit();
+      }
+      // var settings = {
+      //   "url": "https://api.stripe.com/v1/charges",
+      //   "method": "POST",
+      //   "timeout": 0,
+      //   "data": {
+      //     "amount": "999",
+      //     "currency": "usd",
+      //     "description": "Example charge",
+      //     "source": "tok_visa"
+      //   }
+      // };
+      //
+      // $.ajax(settings).done(function (response) {
+      //   console.log(response);
+      // });
+    </script>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/responsive.css?v=1.33">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.js">
+    </script>
+    <script type="text/javascript" src="./js/main.js?v=1.3">
+    </script>
+  </body>
+</html>
